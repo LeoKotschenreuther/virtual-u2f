@@ -1,12 +1,12 @@
 'use strict';
 
 var assert = require('assert');
-//var u2f = require('u2f');
+var u2f = require('u2f');
 var VirtualToken = require('../token.js');
 
 describe('Virtual u2f token', function() {
 
-    var appId = "testApp.com";
+    var appId = "https://testapp.com";
 
     var token = null;
     var keyHandle = null;
@@ -16,31 +16,31 @@ describe('Virtual u2f token', function() {
         token = new VirtualToken();
     });
 
-    it.skip('Handles registration requests', function(done) {
+    it('Handles registration requests', function() {
 
-        var req = u2f.requestRegistration(appId);
+        var req = u2f.request(appId);
 
-        var resp = token.HandleRegisterRequest(req)
+        return token.HandleRefCodeRegisterRequest(req)
         .then(function(resp) {
+            console.log(resp);
 
-            var challenge = req.registerRequests[0];
+            var challenge = req.challenge;
 
-            var result = u2f.checkRegistration(challenge, resp);
+            var result = u2f.checkRegistration(req, resp);
 
             keyHandle = result.keyHandle;
             publicKey = result.publicKey;
 
-            assert(result.successful == true);
+            assert(result.successful);
 
-            done();
         });
     });
 
-    it.skip('Handles signing requests', function(done) {
+    it('Handles signing requests', function() {
 
-        var req = u2f.requestSignature(appId, keyHandle);
+        var req = u2f.request(appId, keyHandle);
 
-        var resp = token.HandleSignRequest(req)
+        return token.HandleRefCodeSignRequest(req)
         .then(function(resp) {
 
             assert(typeof resp.errorCode == 'undefined');
@@ -48,8 +48,6 @@ describe('Virtual u2f token', function() {
             var result = u2f.checkSignature(req, resp, publicKey);
 
             assert(result.successful == true);
-
-            done();
         });
 
     });
