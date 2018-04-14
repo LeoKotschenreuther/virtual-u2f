@@ -423,8 +423,34 @@ module.exports = class U2FToken {
         });
     };
 
+    /**
+     * Handle a registration request
+     * of the Google's Ref Code format
+     * @param request
+     */
+    HandleRefCodeRegisterRequest(request) {
+        request.type = u2f.MessageTypes.U2F_REGISTER_REQUEST;
+        request.registerRequests = [{
+            challenge: request.challenge,
+        }];
 
-}
+        return this.HandleRegisterRequest(request);
+    }
+
+    /**
+     * Handles a sign request object
+     * of the Google's Ref Code format
+     * @param request
+     */
+    HandleRefCodeSignRequest(request) {
+        request.type = u2f.MessageTypes.U2F_SIGN_REQUEST;
+        request.registeredKeys = [{
+            keyHandle: request.keyHandle,
+        }];
+
+        return this.HandleSignRequest(request);
+    }
+};
 
 
 /**
