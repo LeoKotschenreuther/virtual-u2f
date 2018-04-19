@@ -49,7 +49,7 @@ token.HandleSignatureRequest(request)
 
 ```
 
-For a worked example running against [ryankurte/u2f](https://github.com/ryankurte/u2f) (my fork of [ashtuchkin/u2f](https://github.com/ashtuchkin/u2f)), check out [test.js](test/test.js).  
+For a worked example running against [ryankurte/node-u2f](https://github.com/ryankurte/node-u2f) (my fork of [ashtuchkin/u2f](https://github.com/ashtuchkin/u2f)), check out [test.js](test/test.js).  
 
 
 There is also a simple command line application that accepts registration and signing challenges and outputs responses (both in JSON), in case you need to test non-javascript based applications.
