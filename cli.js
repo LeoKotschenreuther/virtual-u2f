@@ -66,6 +66,7 @@ next.then(function() {
     fs.writeFileSync(args.output, respString);
 });
 
+var resp;
 
 // Register an application
 // This creates a key pair and handle to be associated with the application
@@ -73,7 +74,8 @@ function Register(dataIn) {
     console.log("Registering key");
 
     return token.HandleRegisterRequest(dataIn)
-    .then(function(resp) {
+    .then(function(_resp) {
+	resp = _resp;
         console.log("Registration complete. App: " + dataIn.appId + "Key Handle is: " + resp.keyHandle)
     }, function(error) {
         console.log("Registration error: " + error);
@@ -87,7 +89,8 @@ function Sign(dataIn) {
     console.log("Signing");
 
     return token.HandleSignRequest(dataIn)
-    .then(function(resp) {
+    .then(function(_resp) {
+	resp = _resp;
         console.log("Signature complete. App: " + dataIn.appId + " Key Handle is: " + resp.keyHandle)
     }, function(error) {
         console.log("Signature error:" + error);
