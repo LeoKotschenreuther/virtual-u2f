@@ -243,7 +243,7 @@ module.exports = class U2FToken {
 
     // Save a key to the device
     SaveKey(applicationId, keyHandle, keyPair) {
-    
+
         var key = {
             "generated" : (new Date()),
             "appId" : applicationId,
@@ -283,7 +283,7 @@ module.exports = class U2FToken {
      * @returns {boolean}
      */
     IsValidKeyHandleForAppId(keyHandle, appId) {
-        
+
         var key = this.GetKeyByHandle(keyHandle);
 
         if (key === null) {
@@ -316,7 +316,7 @@ module.exports = class U2FToken {
         var keyHandleLength = getKeyHandleLengthString(keyHandle);
 
         var registrationBaseString = getRegistrationSignatureBaseString(applicationIdHash, clientDataHash, keyHandle, keyPair.ecpubhex);
-        
+
         var signature = signHex(ATTESTATION_KEY.private, registrationBaseString);
 
         var response = RESERVED_BYTE + keyPair.ecpubhex + keyHandleLength + keyHandle + ATTESTATION_CERTIFICATE + signature;
@@ -342,7 +342,7 @@ module.exports = class U2FToken {
 
     register(appId, registerRequests, registeredKeys, registerCallback, timeout) {
         HandleRegisterRequest({
-            appId: appId, 
+            appId: appId,
             registerRequests: registerRequests,
             registeredKeys: registeredKeys
         }).then(function(res) {
@@ -359,7 +359,7 @@ module.exports = class U2FToken {
      * @param sendResponse
      */
     HandleSignRequest(request) {
-        
+
         var usedKey = request.registeredKeys.find(function(item) {
             return this.IsValidKeyHandleForAppId(b64tohex(item.keyHandle), request.appId);
         }.bind(this)) || null;
@@ -378,7 +378,7 @@ module.exports = class U2FToken {
                 errorCode: u2f.ErrorCodes.DEVICE_INELIGIBLE,
                 errorMessage: "keyHandle and appId mismatch"
             });
-        } 
+        }
 
         var clientData = getClientDataStringFromRequest(request);
         var clientDataHash = sha256Digest(clientData);
@@ -390,9 +390,9 @@ module.exports = class U2FToken {
         var counterHex = counterPadding(key.counter);
 
         var signature = signHex(key.private, getSignSignatureBaseString(applicationIdHash, counterHex, clientDataHash));
-        
+
         var signatureData = hextob64(USER_PRESENCE_BYTE + counterHex + signature);
-        
+
         if (key.counter >= 65535) {
             key.counter = 0;
         } else {
@@ -467,7 +467,7 @@ var counterPadding = function (num) {
  * @returns {Array} associative array of hexadecimal string of private and public key
  */
 var generateKeyPair = function () {
-    
+
     /**
      *
      * @type {KJUR.crypto.ECDSA}
@@ -485,7 +485,7 @@ var generateKeyPair = function () {
  * @returns {String} the signature bytes as a hexadecimal string
  */
 var signHex = function (privateKey, message) {
-    
+
     /**
      * The signature object to sign a message with a given private key.
      * @type {KJUR.crypto.Signature}
@@ -495,13 +495,13 @@ var signHex = function (privateKey, message) {
         'prov': 'cryptojs/jsrsa'
     });
 
-    sig.initSign({
-        'ecprvhex': privateKey,
-        'eccurvename': 'secp256r1'
-    });
+    sig.init(new KJUR.crypto.ECDSA({
+        prv: privateKey,
+        courve: 'secp256r1',
+    }));
 
     sig.updateHex(message);
-    
+
     return sig.sign();
 };
 
@@ -515,7 +515,7 @@ var signHex = function (privateKey, message) {
  * @returns {string} The signature base string
  */
 var getRegistrationSignatureBaseString = function (applicationParameter, challengeParameter, keyHandle, userPublicKey) {
-    
+
     return FUTURE_USE_BYTE + applicationParameter + challengeParameter + keyHandle + userPublicKey;
 };
 
@@ -529,7 +529,7 @@ var getRegistrationSignatureBaseString = function (applicationParameter, challen
  * @returns {string} The signature base string
  */
 var getSignSignatureBaseString = function (applicationParameter, counter, challenge) {
-    
+
     return applicationParameter + USER_PRESENCE_BYTE + counter + challenge;
 };
 
@@ -537,13 +537,13 @@ var getSignSignatureBaseString = function (applicationParameter, counter, challe
  * Dispatches the user presence event
  */
 var handleButtonPress = function () {
-    
+
     window.dispatchEvent(userPresenceTest);
     return;
 };
 
 var handleSignIn = function () {
-    
+
     currentRequest.sendResponse({
         "success": "sign"
     });
@@ -556,7 +556,7 @@ var handleSignIn = function () {
  * @returns {string}
  */
 var decimalNumberToHexByte = function (dec) {
-    
+
     if (dec > 255) {
         throw new Error("Number exceeds a byte.");
     }
@@ -569,7 +569,7 @@ var decimalNumberToHexByte = function (dec) {
  * @returns {String} Hexadecimal digest
  */
 var sha256Digest = function (s) {
-    
+
     var sha = new KJUR.crypto.MessageDigest({
         alg: 'sha256',
         prov: 'cryptojs'
@@ -579,12 +579,12 @@ var sha256Digest = function (s) {
 };
 
 var arrayBufferToB64 = function (arrayBuffer) {
-    
+
     return btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
 };
 
 var Uint8ToHex = function (uint) {
-    
+
     var s = '';
     for (var i = 0; i < uint.length; i++) {
         s += uint[i].toString(16);
@@ -593,7 +593,7 @@ var Uint8ToHex = function (uint) {
 };
 
 var stringToUint = function (s) {
-    
+
     var uint = new Uint8Array(s.length);
 
     for (var i = 0, j = s.length; i < j; ++i) {
@@ -604,7 +604,7 @@ var stringToUint = function (s) {
 };
 
 var prepareSignableData = function (appId, challenge, callback) {
-    
+
     window.crypto.subtle.digest({
         name: "SHA-256"
     }, stringToUint(appId)).then(function (appIdDigest) {
@@ -622,7 +622,7 @@ var prepareSignableData = function (appId, challenge, callback) {
 };
 
 var prepareChallengeSha256 = function (challenge, callback) {
-    
+
     window.crypto.subtle.digest({
         name: "SHA-256"
     }, stringToUint(challenge)).then(function (fullChallengeDigest) {
@@ -638,22 +638,22 @@ var generateKeyHandle = function () {
 };
 
 var getPrivateAttestationKey = function () {
-    
+
     return ATTESTATION_KEY.private;
 };
 
 var getPublicAttestationKey = function () {
-    
+
     return ATTESTATION_KEY.public;
 };
 
 var getAttestationCertificate = function () {
-    
+
     return ATTESTATION_CERTIFICATE;
 };
 
 var getSessionIdFromRequest = function (request) {
-    
+
     switch (request.type) {
         case u2f.MessageTypes.U2F_REGISTER_REQUEST:
             return request.registerRequests[0].sessionId;
@@ -668,7 +668,7 @@ var getSessionIdFromRequest = function (request) {
 };
 
 var getClientDataStringFromRequest = function (request) {
-    
+
     switch (request.type) {
         case u2f.MessageTypes.U2F_REGISTER_REQUEST:
             return JSON.stringify({challenge: request.registerRequests[0].challenge});
@@ -687,7 +687,7 @@ var getChallengeFromRequest = function (request) {
 };
 
 var getApplicationIdFromRequest = function (request) {
-    
+
     switch (request.type) {
         case u2f.MessageTypes.U2F_REGISTER_REQUEST:
             return request.registerRequests[0].appId;
@@ -713,7 +713,7 @@ var getKeyHandleFromRequest = function (request) {
 };
 
 var getKeyHandleLengthString = function (keyHandle) {
-    
+
     return decimalNumberToHexByte(keyHandle.length / 2);
 };
 

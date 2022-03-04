@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "argparse": "^1.0.7",
-    "jsrsasign": "^5.0.12"
+    "jsrsasign": "^10.5.8"
   }
 }
